@@ -1,0 +1,123 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./images/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,
+  linkcolor=linkcolor,
+  urlcolor=urlcolor,
+colorlinks=true}
+
+\newcommand{\plot}[3]{
+  \begin{figure}[H]
+    \begin{center}
+      \includegraphics[scale=0.6]{#1}
+      \caption{#2}
+      \label{#3}
+    \end{center}
+  \end{figure}
+}
+
+\newcommand{\GoBackN}{``Go-Back-N''}
+\newcommand{\SelectiveRepeat}{``Selective Repeat''}
+
+\begin{document}
+\include{title}
+\newpage
+
+\tableofcontents
+\listoffigures
+\newpage
+
+\section{Постановка задачи}
+\quad Требуется реализовать систему из 2-х объектов --- отправителя (Sender) и
+получателя (Receiver) ---, в которой участники будут обмениваться сообщениями по
+каналу связи с помощью протоколов автоматического запроса повторной передачи со
+скользящего окном: {\GoBackN} и {\SelectiveRepeat}.
+
+\quad Необходимо выяснить зависимость времени работы и количество посланных
+сообщений от размера плавающего окна и вероятности потери сообщения для каждого
+протокола и сравнить их друг с другом.
+
+\section{Теория}
+\quad Протоколы {\GoBackN} и {\SelectiveRepeat} являются протоколами скользящего
+окна: доставка сообщений происходит в рамках некоторого окна фиксированного
+размера. Ошибки выявляются и исправляются в рамках окна.
+
+\quad Основное различие между этими 2-мя протоколами в том, что после
+обнаружения подозрительного или поврежденного сообщения протокол {\GoBackN}
+повторно передает все сообщения, не получившие подтверждения о получении, тогда
+как протокол {\SelectiveRepeat} повторно передает только то сообщение, которое
+оказалось повреждено.
+
+\section{Реализация}
+\quad Из языка Python 3.12.2 были использованы следующие модули:
+\begin{itemize}
+  \item ``numpy'' --- генерация множества чисел;
+  \item ``matplotlib.pyplot'' --- построение и отображение графиков;
+  \item ``time'' --- замерка времени выполнения;
+  \item ``enum'' --- создание типа с ограниченным множеством значений;
+  \item ``Thread'' --- многопоточность.
+\end{itemize}
+
+\section{Результаты}
+\quad Оценка эффективности использования протоколов производится по числу
+сообщений, которые пришлось отправить, и по времени работы, необходимому для
+получения всех сообщений без ошибок. Рассматриваются зависимости этих метрик от
+ширины окна и вероятности потери сообщения.
+
+\quad Рассмотрим зависимость этих метрик от размера окна и вероятности потери
+сообщения.
+
+\quad По умолчанию число сообщений равно 100, ширина окна 15, вероятность потери
+сообщения 0.3.
+
+\plot{./images/GBN_SR_num_prob.png}{Зависимость числа сообщений от вероятности
+потери сообщения}{p:n_pr}
+
+\plot{./images/GBN_SR_time_prob.png}{Зависимость времени работы от вероятности
+потери сообщения}{p:t_pr}
+
+\plot{./images/GBN_SR_num_ws.png}{Зависимость числа сообщений от ширины
+окна}{p:n_ws}
+
+\plot{./images/GBN_SR_time_ws.png}{Зависимость времени работы от ширины
+окна}{p:t_ws}
+
+\section{Выводы}
+\quad По вышеизложенным результатам можно заметить, что в одинаковых условиях
+протоколу {\SelectiveRepeat} требуется отправить меньше сообщений, чем протоколу
+{\GoBackN}.
+
+\quad Что ожидаемо, в силу разной обработки и повторной передачи потерянных
+сообщений. Протокол {\SelectiveRepeat} работает значительно быстрее протокола
+{\GoBackN}.
+
+\section{Литература}
+\begin{itemize}
+  \item \href{https://elib.spbstu.ru/dl/2/s20-76.pdf/info}{Баженов А.Н.
+    <<Интервальный анализ. Основы теории и учебные примеры: учебное пособие>>};
+  \item \href{https://elib.spbstu.ru/dl/5/tr/2021/tr21-169.pdf/info}{Баженов
+    А.Н. <<Естественнонаучные и технические применения интервального анализа:
+  учебное пособие>>};
+  \item \href{https://github.com/AlexanderBazhenov/ComputerNetworks}{Баженов
+    А.Н. Репозиторий ``ComputerNetworks'' на GitHub};
+\end{itemize}
+
+\section{Приложения}
+\quad Исходники лабораторной работы выложены на
+\href{https://github.com/MeShootIn/computer-networks/tree/lab-1}{GitHub}.
+
+\end{document}
