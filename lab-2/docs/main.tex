@@ -1,0 +1,242 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./images/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,
+  linkcolor=linkcolor,
+  urlcolor=urlcolor,
+colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\newcommand{\plot}[3]{
+  \begin{figure}[H]
+    \begin{center}
+      \includegraphics[scale=0.6]{#1}
+      \caption{#2}
+      \label{#3}
+    \end{center}
+  \end{figure}
+}
+
+\begin{document}
+\include{title}
+\newpage
+
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+\section{Постановка задачи}
+\quad Требуется реализовать протокол маршрутизации Open Shortest Path First
+(OSPF). Рассмотреть работу протокола для линейной, кольцевой и звездной
+топологий.
+
+\quad Необходимо выяснить зависимость времени работы и количество посланных
+сообщений от размера плавающего окна и вероятности потери сообщения для каждого
+протокола и сравнить их друг с другом.
+
+\section{Теория}
+\quad OSPF --- протокол динамической маршрутизации, в основе работы которого
+лежит представление множества сетей, маршрутизаторов и каналов в виде
+ориентированного графа.
+
+\quad Описание работы протокола:
+\begin{enumerate}
+  \item после включения маршрутизатора протокол ищет непосредственно
+    подключенных соседей и устанавливает с ними связь;
+  \item Строится карта сети: между соседями происходит обмен информацией о
+    подключенных и доступных сетях. Данная карта одинакова на всех
+    маршрутизаторах;
+  \item Запускается алгоритм SPF (Shortest Path First), который рассчитывает
+    оптимальный маршрут к каждой сети. Процесс представляет собой поиск
+    кратчайшего пути в графе, в вершинах которого доступные сети, а ребра ---
+    пути между ними.
+\end{enumerate}
+
+\section{Реализация}
+\quad Из языка Python 3.12.2 были использованы следующие модули:
+\begin{itemize}
+  \item ``numpy'' --- генерация множества чисел;
+  \item ``matplotlib.pyplot'' --- построение и отображение графиков;
+  \item ``math'' --- экземпляр числа, равного бесконечности.
+\end{itemize}
+
+\section{Результаты}
+\quad Количество узлов во всех топологиях равно $5$. Рассмотриваем линейную
+топологию с радиусом соединения $5$, кольцевую топологию с радиусом соединения
+$6$, звездную топологию с радиусом соединения $5$.
+
+Для сети с линейной топологией имитируем падение одного из некрайних узлов и
+перенумируем оставшиеся узлы сети. Для сети с кольцевой топологией Имитируем
+падение случайного узла и перенумируем оставшиеся узлы сети. Для сети со
+звездной топологией имитируем падение центрального узла.
+
+\plot{./images/TopologyStar.png}{Сеть со звездной топологией}{p:sl}
+
+\begin{table}[H]
+  \caption{Список путей в сети со звездной топологией}
+  \begin{tabular}{| c | c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 & 4 \\
+             \hline
+    0 & 0 & 0-4-1 & 0-4-2 & 0-4-3 & 0-4 \\
+    \hline
+    1 & 1-4-0 & 1 & 1-4-2 & 1-4-3 & 1-4 \\
+    \hline
+    2 & 2-4-0 & 2-4-1 & 2 & 2-4-3 & 2-4 \\
+    \hline
+    3 & 3-4-0 & 3-4-1 & 3-4-2 & 3 & 3-4 \\
+    \hline
+    4 & 4-0 & 4-1 & 4-2 & 4-3 & 4 \\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\plot{./images/TopologyStar_corrupted.png}{Поврежденная сеть со звездной
+топологией}{p:sl_c}
+
+\begin{table}[H]
+  \caption{Список путей в поврежденнной сети со звездной топологией}
+  \begin{tabular}{| c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 \\
+             \hline
+    0 & 0 & - & - & - \\
+    \hline
+    1 & - & 1 & - & - \\
+    \hline
+    2 & - & - & 2 & - \\
+    \hline
+    3 & - & - & - & 3 \\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\plot{./images/TopologyRing.png}{Сеть с кольцевой топологией}{p:rl}
+
+\begin{table}[H]
+  \caption{Список путей в сети с кольцевой топологией}
+  \begin{tabular}{| c | c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 & 4 \\
+             \hline
+    0 & 0 & 0-1 & 0-1-2 & 0-4-3 & 0-4 \\
+    \hline
+    1 & 1-0 & 1 & 1-2 & 1-2-3 & 1-0-4 \\
+    \hline
+    2 & 2-1-0 & 2-1 & 2 & 2-3 & 2-3-4 \\
+    \hline
+    3 & 3-4-0 & 3-2-1 & 3-2 & 3 & 3-4 \\
+    \hline
+    4 & 4-0 & 4-0-1 & 4-3-2 & 4-3 & 4 \\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\plot{./images/TopologyRing_corrupted.png}{Поврежденная сеть с кольцевой
+топологией}{p:rl_c}
+
+\begin{table}[H]
+  \caption{Список путей в поврежденнной сети с кольцевой топологией}
+  \begin{tabular}{| c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 \\
+             \hline
+    0 & 0 & 0-1 & 0-3-2 & 0-3 \\
+    \hline
+    1 & 1-0 & 1 & 1-0-3-2 & 1-0-3 \\
+    \hline
+    2 & 2-3-0 & 2-3-0-1 & 2 & 2-3 \\
+    \hline
+    3 & 3-0 & 3-0-1 & 3-2 & 3 \\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\plot{./images/TopologyLine.png}{Сеть с линейной топологией}{p:tl}
+
+\begin{table}[H]
+  \caption{Список путей в сети с линейной топологией}
+  \begin{tabular}{| c | c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 & 4 \\
+             \hline
+    0 & 0 & 0-1 & 0-1-2 & 0-1-2-3 & 0-1-2-3-4 \\
+    \hline
+    1 & 1-0 & 1 & 1-2 & 1-2-3 & 1-2-3-4 \\
+    \hline
+    2 & 2-1-0 & 2-1 & 2 & 2-3 & 2-3-4 \\
+    \hline
+    3 & 3-2-1-0 & 3-2-1 & 3-2 & 3 & 3-4 \\
+    \hline
+    4 & 4-3-2-1-0 & 4-3-2-1 & 4-3-2 & 4-3 & 4\\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\plot{./images/TopologyLine_corrupted.png}{Поврежденная сеть с линейной
+топологией}{p:tl_c}
+
+\begin{table}[H]
+  \caption{Список путей в поврежденнной сети с линейной топологией}
+  \begin{tabular}{| c | c | c | c | c |}
+    \hline
+             & 0 & 1 & 2 & 3 \\
+             \hline
+    0 & 0 & 0-1 & - & - \\
+    \hline
+    1 & 1-0 & 1 & - & - \\
+    \hline
+    2 & - & - & 2 & 2-3 \\
+    \hline
+    3 & - & - & 3-2 & 3 \\
+    \hline
+  \end{tabular}
+  \centering
+\end{table}
+
+\section{Выводы}
+\quad Из полученных результатов можно заметить следующее. Сеть с линейной
+топологией наиболее чувствительна к потерям узлов сети, потеря одного узла ведёт
+к появлению недостижимых узлов. Сеть с кольцевидной топологией менее
+чувствительна к потерям узлов, при потере одного узла она переходит в сеть с
+линейной топологией. Сеть со звёздной топологией наименее чувствительна к потере
+узлов до тех пор, пока это не центральный узел. В случае потери центрального
+узла любая пара других узлов становится недостижима.
+
+\section{Литература}
+\begin{itemize}
+  \item \href{https://elib.spbstu.ru/dl/2/s20-76.pdf/info}{Баженов А.Н.
+    <<Интервальный анализ. Основы теории и учебные примеры: учебное пособие>>};
+  \item \href{https://elib.spbstu.ru/dl/5/tr/2021/tr21-169.pdf/info}{Баженов
+      А.Н. <<Естественнонаучные и технические применения интервального анализа:
+    учебное пособие>>};
+  \item \href{https://github.com/AlexanderBazhenov/ComputerNetworks}{Баженов
+    А.Н. Репозиторий ``ComputerNetworks'' на GitHub};
+\end{itemize}
+
+\section{Приложения}
+\quad Исходники лабораторной работы выложены на
+\href{https://github.com/MeShootIn/computer-networks/tree/lab-2}{GitHub}.
+
+\end{document}
